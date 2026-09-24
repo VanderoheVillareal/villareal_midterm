@@ -1,0 +1,7 @@
+---
+- name: Install prometheus on Ubuntu and CentOS
+  hosts: all
+  become: true
+
+  roles:
+    - prometheus

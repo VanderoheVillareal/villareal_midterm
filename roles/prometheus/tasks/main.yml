@@ -1,0 +1,64 @@
+---
+- name: installing dependencies for ubuntu
+  ansible.builtin.apt:
+    name:
+      - wget
+      - curl
+      - tar
+      - gzip
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: installing dependencies for centos
+  ansible.builtin.dnf:
+    name:
+      - wget
+      - curl
+      - tar
+      - gzip
+    state: present
+  when: ansible_os_family == "RedHat"
+
+
+- name: Create prometheus groups
+  ansible.builtin.group:
+    name: prometheus
+    state: present
+
+- name: Create prometheus user
+  ansible.builtin.user:
+    name: prometheus
+    group: prometheus
+    state: present
+
+- name: Create prometheus directory
+  ansible.builtin.file:
+    path: /etc/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
+- name: Download prometheus for managed nodes
+  ansible.builtin.get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v2.55.1/prometheus-2.55.1.linux-amd64.tar.gz
+    dest: /tmp/prometheus-2.55.1.linux-amd64.tar.gz
+    mode: '0755'
+
+- name: Extract prometheus
+  ansible.builtin.unarchive:
+    src: /tmp/prometheus-2.55.1.linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Install prometheus binaries
+  ansible.builtin.copy:
+    src: /tmp/prometheus-2.55.1.linux-amd64.tar.gz
+    dest: /usr/local/bin/prometheus
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: create systemd service
+
